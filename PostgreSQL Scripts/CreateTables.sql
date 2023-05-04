@@ -1,3 +1,7 @@
+--DROP TABLE IF EXISTS Warehouse_Inventory CASCADE;
+--DROP TABLE IF EXISTS Warehouse CASCADE;
+--DROP TABLE IF EXISTS Item CASCADE;
+
 -- Warehouse table
 CREATE TABLE Warehouse (
     warehouse_id SERIAL PRIMARY KEY,
