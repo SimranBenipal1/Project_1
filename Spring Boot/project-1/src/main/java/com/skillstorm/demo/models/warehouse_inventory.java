@@ -1,7 +1,5 @@
 package com.skillstorm.demo.models;
 
-import java.util.Objects;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,17 +15,8 @@ public class warehouse_inventory {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int warehouse_inventory_id;
-	
 	@Column
-	@ManyToOne
-	@JoinColumn
-	private int warehouse_id;
-	
-	@Column
-	@ManyToOne
-	@JoinColumn
-	private int item_id;
+	private long warehouse_inventory_id;
 	
 	@Column
 	private int quantity;
@@ -37,61 +26,36 @@ public class warehouse_inventory {
 	
 	@Column
 	private double size;
+	
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "item_id")
+    private item item;
+	
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "warehouse_id")
+    private warehouse warehouse;
 
-	public warehouse_inventory(int warehouse_inventory_id, int warehouse_id, int item_id, int quantity, double value,
-			double size) {
+	public warehouse_inventory(long warehouse_inventory_id, int quantity, double value, double size,
+			com.skillstorm.demo.models.item item, com.skillstorm.demo.models.warehouse warehouse) {
 		super();
 		this.warehouse_inventory_id = warehouse_inventory_id;
-		this.warehouse_id = warehouse_id;
-		this.item_id = item_id;
 		this.quantity = quantity;
 		this.value = value;
 		this.size = size;
+		this.item = item;
+		this.warehouse = warehouse;
 	}
 	
 	public warehouse_inventory() {
 		
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(warehouse_inventory_id);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		warehouse_inventory other = (warehouse_inventory) obj;
-		return warehouse_inventory_id == other.warehouse_inventory_id;
-	}
-
-	public int getWarehouse_inventory_id() {
+	public long getWarehouse_inventory_id() {
 		return warehouse_inventory_id;
 	}
 
-	public void setWarehouse_inventory_id(int warehouse_inventory_id) {
+	public void setWarehouse_inventory_id(long warehouse_inventory_id) {
 		this.warehouse_inventory_id = warehouse_inventory_id;
-	}
-
-	public int getWarehouse_id() {
-		return warehouse_id;
-	}
-
-	public void setWarehouse_id(int warehouse_id) {
-		this.warehouse_id = warehouse_id;
-	}
-
-	public int getItem_id() {
-		return item_id;
-	}
-
-	public void setItem_id(int item_id) {
-		this.item_id = item_id;
 	}
 
 	public int getQuantity() {
@@ -117,6 +81,23 @@ public class warehouse_inventory {
 	public void setSize(double size) {
 		this.size = size;
 	}
+
+	public item getItem() {
+		return item;
+	}
+
+	public void setItem(item item) {
+		this.item = item;
+	}
+
+	public warehouse getWarehouse() {
+		return warehouse;
+	}
+
+	public void setWarehouse(warehouse warehouse) {
+		this.warehouse = warehouse;
+	}
+	
 	
 	
 }

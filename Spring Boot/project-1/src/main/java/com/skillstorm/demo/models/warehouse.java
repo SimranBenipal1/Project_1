@@ -15,15 +15,20 @@ public class warehouse {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int warehouse_id;
-	
 	@Column
+	private long warehouse_id;
+	
+	@Column(nullable = false)
 	private String name;
 	
-	@Column
+	@Column(nullable = false)
 	private double maxium_capacity;
 
-	public warehouse(int warehouse_id, String name, double maxium_capacity) {
+	
+	
+	
+	
+	public warehouse(long warehouse_id, String name, double maxium_capacity) {
 		super();
 		this.warehouse_id = warehouse_id;
 		this.name = name;
@@ -51,7 +56,7 @@ public class warehouse {
 		return warehouse_id == other.warehouse_id;
 	}
 
-	public int getWarehouse_id() {
+	public long getWarehouse_id() {
 		return warehouse_id;
 	}
 

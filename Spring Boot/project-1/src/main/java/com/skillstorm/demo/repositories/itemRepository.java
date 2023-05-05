@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.skillstorm.demo.models.item;
 
 @Repository
-public interface itemRepository extends JpaRepository<item, Integer>{
+public interface itemRepository extends JpaRepository<item, Long>{
 
 }

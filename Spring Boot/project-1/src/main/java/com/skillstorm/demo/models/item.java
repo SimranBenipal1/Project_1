@@ -15,15 +15,21 @@ public class item {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int item_id;
-	
 	@Column
+	private long item_id;
+	
+	@Column(nullable = false)
 	private String name;
 	@Column
 	private String description;
-	@Column
+	@Column (nullable = false)
 	private String category;
-	public item(int item_id, String name, String description, String category) {
+	
+	
+	
+	
+	
+	public item(long item_id, String name, String description, String category) {
 		super();
 		this.item_id = item_id;
 		this.name = name;
@@ -52,7 +58,7 @@ public class item {
 		return item_id == other.item_id;
 	}
 
-	public int getItem_id() {
+	public long getItem_id() {
 		return item_id;
 	}
 
