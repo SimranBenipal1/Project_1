@@ -60,7 +60,7 @@ public class warehouse {
 		return warehouse_id;
 	}
 
-	public void setWarehouse_id(int warehouse_id) {
+	public void setWarehouse_id(long warehouse_id) {
 		this.warehouse_id = warehouse_id;
 	}
 
