@@ -5,8 +5,8 @@
 -- Warehouse table
 CREATE TABLE Warehouse (
     warehouse_id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    maximum_capacity DECIMAL NOT NULL -- Going to store in CM^2
+    name VARCHAR(255) NOT NULL
+    --maximum_capacity float8 NOT NULL -- Going to store in CM^2
 	
 );
 
