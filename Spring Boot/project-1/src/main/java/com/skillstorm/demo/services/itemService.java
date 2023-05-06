@@ -24,4 +24,17 @@ public class itemService {
 	public item createItem (item item) {
 		return itemRepository.save(item);
 	}
+	
+	public void deleteItem (long id) {
+		itemRepository.deleteById(id);
+	}
+	
+	public item updateItem (item item) {
+		item item2 = new item (
+				item.getItem_id(), 
+				item.getName(),
+				item.getDescription(), 
+				item.getCategory());
+		return itemRepository.save(item2);
+	}
 }

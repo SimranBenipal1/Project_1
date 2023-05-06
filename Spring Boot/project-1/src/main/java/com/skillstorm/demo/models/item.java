@@ -62,8 +62,8 @@ public class item {
 		return item_id;
 	}
 
-	public void setItem_id(int item_id) {
-		this.item_id = item_id;
+	public void setItem_id(long id) {
+		this.item_id = id;
 	}
 
 	public String getName() {

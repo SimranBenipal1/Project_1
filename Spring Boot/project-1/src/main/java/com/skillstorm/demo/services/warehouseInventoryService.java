@@ -22,4 +22,20 @@ public class warehouseInventoryService {
 	public warehouse_inventory createInventory (warehouse_inventory warehouse_inventory) {
 		return warehouseInventoryRepository.save(warehouse_inventory);
 	}
+	
+	public void deleteInventory(long id) {
+		warehouseInventoryRepository.deleteById(id);
+	}
+	
+	public warehouse_inventory updateInventory (warehouse_inventory warehouse_inventory) {
+		warehouse_inventory warehouse_inventory2 = 
+				new warehouse_inventory(
+						warehouse_inventory.getWarehouse_inventory_id(), 
+						warehouse_inventory.getQuantity(), 
+						warehouse_inventory.getValue(), 
+						warehouse_inventory.getSize(), 
+						warehouse_inventory.getItem(), 
+						warehouse_inventory.getWarehouse());
+		return warehouse_inventory2;
+	}
 }

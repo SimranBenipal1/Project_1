@@ -34,7 +34,10 @@ public class warehouseService {
 	}
 	
 	public warehouse updateWarehouse (warehouse warehouse) {
-		warehouse warehouse2 = new warehouse (warehouse.getWarehouse_id(), warehouse.getName(), warehouse.getMaxium_capacity());
+		warehouse warehouse2 = new warehouse (
+				warehouse.getWarehouse_id(), 
+				warehouse.getName(), 
+				warehouse.getMaxium_capacity());
 		return warehouseRepository.save(warehouse2);
 	}
 }

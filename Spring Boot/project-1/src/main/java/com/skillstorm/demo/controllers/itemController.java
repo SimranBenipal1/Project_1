@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,4 +41,14 @@ public class itemController {
 		item item2 = itemService.createItem(item);
 		return new ResponseEntity<>(item2, HttpStatus.CREATED);
 	}
+	@DeleteMapping("/{id}")
+	public void deleteItem(@PathVariable long id) {
+		itemService.deleteItem(id);
+	}
+	@PutMapping("{id}")
+	public item updateItem(@PathVariable long id, @RequestBody item item) {
+		item.setItem_id(id);
+		return item;
+	}
+	
 }
