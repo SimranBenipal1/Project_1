@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import com.skillstorm.demo.models.item;
 import com.skillstorm.demo.repositories.itemRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class itemService {
 	
 	@Autowired

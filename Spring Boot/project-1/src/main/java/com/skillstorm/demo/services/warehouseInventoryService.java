@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import com.skillstorm.demo.models.warehouse_inventory;
 import com.skillstorm.demo.repositories.warehouseInventoryRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class warehouseInventoryService {
 	@Autowired
 	private warehouseInventoryRepository warehouseInventoryRepository;

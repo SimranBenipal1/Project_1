@@ -5,15 +5,11 @@ import WarehouseIcon from '@mui/icons-material/Warehouse';
 import Button from '@mui/material/Button';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import * as React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
+import "./App.css";
+
 
 
 function App() {
@@ -21,12 +17,20 @@ function App() {
   const [warehouses, setWarehouses] = useState([]);
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();
+  const [inventory, setInventory] = useState([]);
 
-  //Get Warehouse table
+  //Get Warehouse Names
   useEffect(() => {
     fetch('http://localhost:8080/warehouse')
       .then(res => res.json())
       .then(data => setWarehouses(data))
+      .catch(err => console.error(err))
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/inventory')
+      .then(res => res.json())
+      .then(data => setInventory(data))
       .catch(err => console.error(err))
   }, []);
 
@@ -53,6 +57,28 @@ function App() {
     setWarehouses(updatedWarehouses);
   }
 
+  //Names for the columns in the table
+  const columns = [
+    { header: 'Warehouse Inventory ID', key: 'warehouse_inventory_id' },
+    { header: 'Quantity', key: 'quantity' },
+    { header: 'Value', key: 'value' },
+    { header: 'Size', key: 'size' },
+    { header: 'Item Name', key: 'item_name' },
+    { header: 'Item Description', key: 'item_description' },
+    { header: 'Item Category', key: 'item_category' },
+    { header: 'Actions', key: 'actions' }, // Add "Actions" column
+  ];
+
+  const renderRow = (row) => (
+    <tr key={row.warehouse_inventory_id}>
+      {columns.map((column) => (
+        <td key={`${row.warehouse_inventory_id}-${column.key}`}>
+          {row[column.key]}
+        </td>
+      ))}
+    </tr>
+  );
+
     return (
 
       <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
@@ -69,14 +95,12 @@ function App() {
             {" "}
             <h2>Warehouses</h2>
           </MenuItem>
-
-
           {warehouses?.map(warehouse => {
-            console.log(warehouse)
+            //console.log(warehouse)
             return (
               <SubMenu key={warehouse.id} icon={<WarehouseIcon />} label={warehouse.name}>
               <MenuItem icon={<InventoryIcon />}>View Inventory</MenuItem>
-              <MenuItem icon={<EditIcon />}>Edit Warehouse</MenuItem>
+              <MenuItem icon={<EditIcon />} >Edit Warehouse</MenuItem>
               <MenuItem icon={<DeleteOutlineIcon />} onClick={() => warehouseDelete(warehouse.warehouse_id)}>Delete Warehouse</MenuItem>
               </SubMenu>
             )
@@ -96,22 +120,30 @@ function App() {
         <h1 style={{ marginLeft: "5rem" }}>
           Inventory
         </h1>
-        <h2>
-          What is left to do:
-          Warehouses CUD
-          Inventory CRUD
-          Items CRUD
-          Checking for overflow size
 
-        </h2>
-
-
-
-
-
-
-
-
+        <table>
+      <thead>
+        <tr>
+          {columns.map((column) => (
+            <th key={column.key}>{column.header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {inventory.map((row) => (
+          <tr key={row.warehouse_inventory_id}>
+            <td>{row.warehouse_inventory_id}</td>
+            <td>{row.quantity}</td>
+            <td>{row.value}</td>
+            <td>{row.size}</td>
+            <td>{row.item.name}</td>
+            <td>{row.item.description}</td>
+            <td>{row.item.category}</td>
+            <td> <EditIcon onClick={() => console.log("Hello World")}/><DeleteOutlineIcon onClick={() => console.log("Hello World")} /> </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
 
 
       </main>
