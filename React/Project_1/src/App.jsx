@@ -27,12 +27,12 @@ function App() {
       .catch(err => console.error(err))
   }, []);
 
-  useEffect(() => {
-    fetch('http://localhost:8080/inventory')
-      .then(res => res.json())
-      .then(data => setInventory(data))
-      .catch(err => console.error(err))
-  }, []);
+  // useEffect(() => {
+  //   fetch('http://localhost:8080/inventory')
+  //     .then(res => res.json())
+  //     .then(data => setInventory(data))
+  //     .catch(err => console.error(err))
+  // }, []);
 
   //Delete warehouse by ID and remove it from the State
   function warehouseDelete(id) {
@@ -57,6 +57,14 @@ function App() {
     setWarehouses(updatedWarehouses);
   }
 
+  function updateTable(id){
+    fetch('http://localhost:8080/inventory')
+      .then(res => res.json())
+      .then(data => setInventory(data.filter(item => item.warehouse.warehouse_id === id)))
+      .catch(err => console.error(err))
+
+  }
+
   //Names for the columns in the table
   const columns = [
     { header: 'Warehouse Inventory ID', key: 'warehouse_inventory_id' },
@@ -66,18 +74,8 @@ function App() {
     { header: 'Item Name', key: 'item_name' },
     { header: 'Item Description', key: 'item_description' },
     { header: 'Item Category', key: 'item_category' },
-    { header: 'Actions', key: 'actions' }, // Add "Actions" column
+    { header: 'Actions', key: 'actions' }, 
   ];
-
-  const renderRow = (row) => (
-    <tr key={row.warehouse_inventory_id}>
-      {columns.map((column) => (
-        <td key={`${row.warehouse_inventory_id}-${column.key}`}>
-          {row[column.key]}
-        </td>
-      ))}
-    </tr>
-  );
 
     return (
 
@@ -99,7 +97,7 @@ function App() {
             //console.log(warehouse)
             return (
               <SubMenu key={warehouse.id} icon={<WarehouseIcon />} label={warehouse.name}>
-              <MenuItem icon={<InventoryIcon />}>View Inventory</MenuItem>
+              <MenuItem icon={<InventoryIcon />} onClick={() => updateTable(warehouse.warehouse_id)}>View Inventory</MenuItem>
               <MenuItem icon={<EditIcon />} >Edit Warehouse</MenuItem>
               <MenuItem icon={<DeleteOutlineIcon />} onClick={() => warehouseDelete(warehouse.warehouse_id)}>Delete Warehouse</MenuItem>
               </SubMenu>

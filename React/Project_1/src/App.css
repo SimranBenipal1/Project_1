@@ -1,5 +1,6 @@
 /* Set default font size and color */
 table {
+    width: 85vw;
     font-size: 14px;
     color: #333;
   }
