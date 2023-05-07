@@ -48,7 +48,7 @@ public class itemController {
 	@PutMapping("{id}")
 	public item updateItem(@PathVariable long id, @RequestBody item item) {
 		item.setItem_id(id);
-		return item;
+		return itemService.updateItem(item);
 	}
 	
 }

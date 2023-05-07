@@ -39,6 +39,6 @@ public class warehouseInventoryService {
 						warehouse_inventory.getSize(), 
 						warehouse_inventory.getItem(), 
 						warehouse_inventory.getWarehouse());
-		return warehouse_inventory2;
+		return warehouseInventoryRepository.save(warehouse_inventory2);
 	}
 }
