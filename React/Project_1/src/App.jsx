@@ -159,6 +159,11 @@ function App() {
     if (form.item_name.value == '' || form.item_category.value == '' || form.quantity.value == '' || form.size.value == '' || form.value.value == '') {
       return;
     }
+
+    if ( form.quantity.value <= 0  || form.size.value <= 0 || form.value.value <= 0 ){
+      return;
+    }
+
     //console.log(warehouses);
     const warehouse = warehouses.find(warehouse => warehouse.warehouse_id === currentWarehouse);
 
@@ -394,7 +399,6 @@ function App() {
       alert(`Inventory size (${sumOfSizes}) exceeds warehouse capacity (${warehouseCapacity})!`);
       return;
     }
-
 
     let quantity = form.elements['edit-quantity'].value.trim();
     quantity = quantity ? Number(quantity) : rowData.quantity;
