@@ -1,6 +1,6 @@
 table {
     width: 100%;
-    font-size: 14px;
+    font-size: 20px;
     color: #333;
     border-collapse: collapse;
   }
@@ -59,6 +59,7 @@ label {
 }
 
 input[type="number"],
+
 input[type="text"] {
   padding: 0.5rem;
   border-radius: 4px;

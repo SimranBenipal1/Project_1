@@ -8,6 +8,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import * as React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import "./App.css";
+import LineWeightIcon from '@mui/icons-material/LineWeight';
 
 
 
@@ -408,6 +409,7 @@ function App() {
             return (
               <SubMenu key={warehouse.id} icon={<WarehouseIcon />} label={warehouse.name}>
               <MenuItem icon={<InventoryIcon />} onClick={() => updateTable(warehouse.warehouse_id)}>View Inventory</MenuItem>
+              <MenuItem icon={<LineWeightIcon />} >Capacity: {warehouse.maxium_capacity}</MenuItem>
               <SubMenu icon={<EditIcon />} label= "Edit Warehouse">
               <form id={`edit-warehouse-form-${warehouse.warehouse_id}`} onSubmit={handleSubmit}>
                   <label>
