@@ -145,6 +145,19 @@ function App() {
     setInventoryForm(true);
   };
 
+  function removeInventory(inventoryID, itemID){
+    console.log(inventoryID);
+    console.log(itemID);
+    fetch('http://localhost:8080/inventory/' + inventoryID, {
+      method: 'delete'
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+    updateTable(currentWarehouse);
+  }
+
     return (
 
       <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
@@ -204,7 +217,7 @@ function App() {
             <td>{row.item.name}</td>
             <td>{row.item.description}</td>
             <td>{row.item.category}</td>
-            <td> <EditIcon onClick={() => console.log("Hello World")}/><DeleteOutlineIcon onClick={() => console.log("Hello World")} /> </td>
+            <td> <EditIcon onClick={() => console.log("Hello World")}/><DeleteOutlineIcon onClick={() => removeInventory(row.warehouse_inventory_id, row.item.item_id)} /> </td>
           </tr>
         ))}
       </tbody>
