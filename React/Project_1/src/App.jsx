@@ -55,13 +55,16 @@ function App() {
       const data = await res.json();
       setInventory(data.filter(item => item.warehouse.warehouse_id === id));
       setCurrentWarehouse(id);
-      console.log(id)
+      //console.log(id)
       handleInventoryForm();
     } catch (err) {
       console.error(err);
     }
   }
 
+  function addWarehouse(){
+
+  }
   //Names for the columns in the table
   const columns = [
     { header: 'Warehouse Inventory ID', key: 'warehouse_inventory_id' },
@@ -78,7 +81,7 @@ function App() {
     //console.log(inventory);
     const form = document.getElementById('add-inventory-form');
 
-    console.log(form)
+    //console.log(form)
     const itemData = {
       name: form.item_name.value,
       description: form.item_description.value,
@@ -92,26 +95,28 @@ function App() {
       },
       body: JSON.stringify(itemData)
     })
-
-    let matchingItem;
-
-    fetch('http://localhost:8080/items')
-    .then(response => response.json())
-    .then(items => {
-      // Find the item with matching criteria
-      matchingItem = items.find(item => item.name === form.item_name.value && item.description === form.item_description.value && item.category === form.item_category.value);
-      //console.log(matchingItem); 
-      const inventoryData = {
-        quantity: form.quantity.value,
-        value: form.value.value,
-        size: form.size.value,
-        item: matchingItem,
-        warehouse: inventory[0].warehouse
-      };
-      addInventory(inventoryData);
-    })
-    .catch(error => console.error(error));
-
+      .then(res => {
+        return fetch('http://localhost:8080/warehouse/' + currentWarehouse);
+      })
+      .then(res => res.json())
+      .then(warehouseData => {
+        return fetch('http://localhost:8080/items')
+          .then(response => response.json())
+          .then(items => {
+            let matchingItem = items.find(item => item.name === form.item_name.value && item.description === form.item_description.value && item.category === form.item_category.value);
+    
+            const inventoryData = {
+              quantity: form.quantity.value,
+              value: form.value.value,
+              size: form.size.value,
+              item: matchingItem,
+              warehouse: warehouseData
+            };
+    
+            addInventory(inventoryData);
+          });
+      })
+      .catch(error => console.error(error));
 
   }
 
@@ -128,7 +133,7 @@ function App() {
     })
     .then(response => response.json())
     .then(data => {
-      console.log(data);
+      //console.log(data);
       updateTable(currentWarehouse);
     })
     .catch(error => console.error(error));
@@ -146,8 +151,8 @@ function App() {
   };
 
   function removeInventory(inventoryID, itemID){
-    console.log(inventoryID);
-    console.log(itemID);
+    //console.log(inventoryID);
+    //console.log(itemID);
     fetch('http://localhost:8080/inventory/' + inventoryID, {
       method: 'delete'
     })
@@ -156,6 +161,62 @@ function App() {
     });
 
     updateTable(currentWarehouse);
+  }
+
+  function handleWarehouseEdit(warehouseId){
+    let warehouse;
+
+    fetch("http://localhost:8080/warehouse/" + warehouseId)
+      .then(response => response.json())
+      .then(data => {
+        warehouse = data;
+    
+        const form = document.getElementById('edit-warehouse-form-' + warehouseId);
+        const formData = new FormData(form);
+        
+        //console.log(formData);
+
+        const warehouseData = {
+          name: formData.get('Name'),
+          maxium_capacity: parseInt(formData.get('Size'))
+        }
+
+        //console.log(warehouseData.name)
+        //console.log(warehouseData.maximum_capacity)
+        //console.log(warehouseData)
+        if (warehouseData.name == ""){
+          warehouseData.name = warehouse.name;
+        }
+    
+        if (warehouseData.maxium_capacity == ''){
+          warehouseData.maxium_capacity = parseInt(warehouse.maxium_capacity);
+        }
+        //console.log(warehouseData);
+    
+        fetch('http://localhost:8080/warehouse/' + warehouseId, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(warehouseData)
+        })
+          .then(response => response.json())
+          .then(data => {
+            //console.log(data);
+            fetch('http://localhost:8080/warehouse')
+            .then(res => res.json())
+            .then(data => setWarehouses(data))
+            .catch(err => console.error(err))
+          })
+          .catch(error => {
+            console.error(error);
+          });
+    
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
   }
 
     return (
@@ -179,14 +240,26 @@ function App() {
             return (
               <SubMenu key={warehouse.id} icon={<WarehouseIcon />} label={warehouse.name}>
               <MenuItem icon={<InventoryIcon />} onClick={() => updateTable(warehouse.warehouse_id)}>View Inventory</MenuItem>
-              <MenuItem icon={<EditIcon />} >Edit Warehouse</MenuItem>
+              <SubMenu icon={<EditIcon />} label= "Edit Warehouse">
+              <form id={`edit-warehouse-form-${warehouse.warehouse_id}`} onSubmit={handleSubmit}>
+                  <label>
+                  Name:
+                  <input type="text" name="Name" placeholder={warehouse.name}/>
+                  </label>
+                  <label>
+                  Size:
+                  <input type="number" name="Size" placeholder={warehouse.maxium_capacity}/>
+                  </label>
+                  <button type="Submit" onClick={() => handleWarehouseEdit(warehouse.warehouse_id)} >Submit</button>
+                  </form>
+              </SubMenu>
               <MenuItem icon={<DeleteOutlineIcon />} onClick={() => warehouseDelete(warehouse.warehouse_id)}>Delete Warehouse</MenuItem>
               </SubMenu>
             )
           })}
 
-            <div>
-            <Button style={{ color: 'black', position: 'absolute', bottom: 15, left: 0, width: '100%'}} variant="text" > Add </Button>
+          <div>
+            <Button style={{ color: 'black', position: 'absolute', bottom: 15, left: 0, width: '100%'}} variant="text" onClick={addWarehouse}> Add </Button>
             </div>
         </Menu>
 
