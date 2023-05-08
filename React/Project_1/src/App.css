@@ -5,37 +5,27 @@ table {
     border-collapse: collapse;
   }
   
-  /* Style table header */
-  th {
+
+th {
     background-color: #ddd;
     font-weight: bold;
     padding: 8px;
     text-align: left;
     border: 1px solid #ccc;
   }
-  
-  /* Style table rows */
-  tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
-  /* Style table cells */
-  td {
+
+td {
     padding: 8px;
     border: 1px solid #ccc;
   }
   
-  /* Style the first column */
-  td:first-child {
+td:first-child {
     font-weight: bold;
   }
   
-  /* Add hover effect to table rows */
-  tr:hover {
+tr:hover {
     background-color: #ddd;
   }
-
-
 
 form {
   display: flex;

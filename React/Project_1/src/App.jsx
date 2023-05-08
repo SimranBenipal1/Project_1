@@ -11,7 +11,14 @@ import "./App.css";
 import LineWeightIcon from '@mui/icons-material/LineWeight';
 
 
-
+/**
+ * Component that renders the side bar and table
+ * 
+ * @date 5/8/2023 - 5:39:31 AM
+ * @author Simran Benipal
+ *
+ * @returns {*}
+ */
 function App() {
   const { collapseSidebar } = useProSidebar();
   const [warehouses, setWarehouses] = useState([]);
@@ -20,37 +27,64 @@ function App() {
   const [currentWarehouse, setCurrentWarehouse] = useState(0);
   const [editForm, setEditForm] = useState(false);
   const [rowData, setRow] = useState([]);
-  //Get Warehouse Names
+
+  /** 
+   * On mount load up the side bar with a list of warehouses
+  */
   useEffect(() => {
     fetch('http://localhost:8080/warehouse')
       .then(res => res.json())
-      .then(data => setWarehouses(data))
+      .then(data => {
+        data.sort((a, b) => a.warehouse_id - b.warehouse_id);
+        setWarehouses(data);
+      })
       .catch(err => console.error(err))
   }, []);
 
-  //Delete warehouse by ID and remove it from the State
+  /**
+   * A warehouse by passing the ID of the warehouse to be deleted
+   * 
+   * @param {*} id warehouse ID
+   */
   function warehouseDelete(id) {
     fetch('http://localhost:8080/warehouse/' + id, {
       method: 'delete'
     })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error('Something went wrong');
-      }
-    })
-    .then(data => {
-      console.log(data);
-    })
-    .catch(error => {
-      //console.error('Error:', error);
-    });
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Something went wrong');
+        }
+      })
+      .then(data => {
+        //console.log(data);
+        fetch('http://localhost:8080/warehouse')
+          .then(res => res.json())
+          .then(data => {
+            data.sort((a, b) => a.warehouse_id - b.warehouse_id);
+            setWarehouses(data);
+          })
+          .catch(err => console.error(err))
+      })
+      .catch(error => {
+        //console.error('Error:', error);
+        fetch('http://localhost:8080/warehouse')
+          .then(res => res.json())
+          .then(data => {
+            data.sort((a, b) => a.warehouse_id - b.warehouse_id);
+            setWarehouses(data);
+          })
+          .catch(err => console.error(err))
+      });
 
-    const updatedWarehouses = warehouses.filter(warehouse => warehouse.warehouse_id !== id);
-    setWarehouses(updatedWarehouses);
+
   }
 
+  /**
+   * Updates the table by pulling from /inventory and filtering out data
+   * @param {*} id Inventory ID 
+   */
   async function updateTable(id) {
     try {
       const res = await fetch('http://localhost:8080/inventory');
@@ -65,7 +99,10 @@ function App() {
     }
   }
 
-  function addWarehouse(){
+  /**
+   * Creates a default warhouse with the name Default Warehouse and Size of 10,000
+   */
+  function addWarehouse() {
     fetch('http://localhost:8080/warehouse', {
       method: 'POST',
       headers: {
@@ -79,19 +116,25 @@ function App() {
       .then(response => response.json())
       .then(
         fetch('http://localhost:8080/warehouse')
-        .then(res => res.json())
-        .then(data => {
-          //console.log(data);
-          fetch('http://localhost:8080/warehouse')
           .then(res => res.json())
-          .then(data => setWarehouses(data))
+          .then(data => {
+            //console.log(data);
+            fetch('http://localhost:8080/warehouse')
+              .then(res => res.json())
+              .then(data => {
+                data.sort((a, b) => a.warehouse_id - b.warehouse_id);
+                setWarehouses(data);
+              })
+              .catch(err => console.error(err))
+          })
           .catch(err => console.error(err))
-        })
-        .catch(err => console.error(err))
       )
       .catch(error => console.error(error));
   }
 
+  /**
+   * Columns for the main data table
+   */
   const columns = [
     { header: 'Warehouse Inventory ID', key: 'warehouse_inventory_id' },
     { header: 'Quantity', key: 'quantity' },
@@ -100,21 +143,28 @@ function App() {
     { header: 'Item Name', key: 'item_name' },
     { header: 'Item Description', key: 'item_description' },
     { header: 'Item Category', key: 'item_category' },
-    { header: 'Actions', key: 'actions' }, 
+    { header: 'Actions', key: 'actions' },
   ];
 
-  function addItem(){
+  /**
+   *  Calls the API to make an item. Calls Add Inventory
+   * 
+   */
+  function addItem() {
     //console.log(inventory);
     const form = document.getElementById('add-inventory-form');
 
     //console.log(inventory);
 
-    if (form.item_name.value == '' || form.item_category.value == '' || form.quantity.value == '' || form.size.value == '' || form.value.value == ''){
+    if (form.item_name.value == '' || form.item_category.value == '' || form.quantity.value == '' || form.size.value == '' || form.value.value == '') {
       return;
     }
+    //console.log(warehouses);
+    const warehouse = warehouses.find(warehouse => warehouse.warehouse_id === currentWarehouse);
+
 
     let sumOfSizes = 0;
-    let warehouseCapacity = inventory[0].warehouse.maxium_capacity;
+    let warehouseCapacity = warehouse.maxium_capacity;
 
     for (let i = 0; i < inventory.length; i++) {
       sumOfSizes += inventory[i].size;
@@ -125,7 +175,7 @@ function App() {
     if (sumOfSizes > warehouseCapacity) {
       alert(`Inventory size (${sumOfSizes}) exceeds warehouse capacity (${warehouseCapacity})!`);
       return;
-    } 
+    }
 
     //console.log(form)
     const itemData = {
@@ -150,7 +200,7 @@ function App() {
           .then(response => response.json())
           .then(items => {
             let matchingItem = items.find(item => item.name === form.item_name.value && item.description === form.item_description.value && item.category === form.item_category.value);
-    
+
             const inventoryData = {
               quantity: form.quantity.value,
               value: form.value.value,
@@ -158,7 +208,7 @@ function App() {
               item: matchingItem,
               warehouse: warehouseData
             };
-    
+
             addInventory(inventoryData);
           });
       })
@@ -166,7 +216,12 @@ function App() {
 
   }
 
-  function addInventory(inventoryData){
+  /**
+   * Calls the API to make inventory. Called from addItem
+   * 
+   * @param {*} inventoryData A JSON of the inventory object
+   */
+  function addInventory(inventoryData) {
     //console.log(matchingItem)
     //console.log(inventoryData)
 
@@ -177,76 +232,92 @@ function App() {
       },
       body: JSON.stringify(inventoryData)
     })
-    .then(response => response.json())
-    .then(data => {
-      //console.log(data);
-      updateTable(currentWarehouse);
-    })
-    .catch(error => console.error(error));
+      .then(response => response.json())
+      .then(data => {
+        //console.log(data);
+        updateTable(currentWarehouse);
+      })
+      .catch(error => console.error(error));
 
 
-      //console.log(currentWarehouse);
+    //console.log(currentWarehouse);
   }
 
+  /**
+   * Stops the forms from refreshing the page
+   * 
+   * @param {*} event 
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
   };
 
+  /**
+   * toggles the add item form
+   */
   const handleInventoryForm = () => {
     setInventoryForm(true);
   };
 
-  function removeInventory(inventoryID, itemID){
+  /**
+   * 2 Api calls, Removes the inventory first and then the associated item 
+   * 
+   * @param {*} inventoryID Inventory ID 
+   * @param {*} itemID  Item ID
+   */
+  function removeInventory(inventoryID, itemID) {
     //console.log(inventoryID);
     //console.log(itemID);
     fetch('http://localhost:8080/inventory/' + inventoryID, {
       method: 'delete'
     })
-    .then(data => {
-      fetch('http://localhost:8080/items/' + itemID, {
-        method: 'delete'
+      .then(data => {
+        fetch('http://localhost:8080/items/' + itemID, {
+          method: 'delete'
+        })
+          .catch(error => {
+            console.error('Error:', error);
+          });
       })
       .catch(error => {
         console.error('Error:', error);
       });
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
 
     updateTable(currentWarehouse);
   }
 
-  function handleWarehouseEdit(warehouseId){
+  /**
+   * Takes form data from the edit-warehouse-form, checks if they are empty and based on that updates a warehouse
+   * 
+   * @param {*} warehouseId warehouse ID
+   */
+  function handleWarehouseEdit(warehouseId) {
     let warehouse;
 
     fetch("http://localhost:8080/warehouse/" + warehouseId)
       .then(response => response.json())
       .then(data => {
         warehouse = data;
-    
+
         const form = document.getElementById('edit-warehouse-form-' + warehouseId);
         const formData = new FormData(form);
-        
+
         //console.log(formData);
 
         const warehouseData = {
           name: formData.get('Name'),
           maxium_capacity: parseInt(formData.get('Size'))
         }
-
         //console.log(warehouseData.name)
         //console.log(warehouseData.maximum_capacity)
         //console.log(warehouseData)
-        if (warehouseData.name == ""){
+        if (warehouseData.name == "") {
           warehouseData.name = warehouse.name;
         }
-    
-        if (warehouseData.maxium_capacity == ''){
+        if (warehouseData.maxium_capacity == '') {
           warehouseData.maxium_capacity = parseInt(warehouse.maxium_capacity);
         }
         //console.log(warehouseData);
-    
         fetch('http://localhost:8080/warehouse/' + warehouseId, {
           method: "PUT",
           headers: {
@@ -258,14 +329,17 @@ function App() {
           .then(data => {
             //console.log(data);
             fetch('http://localhost:8080/warehouse')
-            .then(res => res.json())
-            .then(data => setWarehouses(data))
-            .catch(err => console.error(err))
+              .then(res => res.json())
+              .then(data => {
+                data.sort((a, b) => a.warehouse_id - b.warehouse_id);
+                setWarehouses(data);
+              })
+              .catch(err => console.error(err))
           })
           .catch(error => {
             console.error(error);
           });
-    
+
       })
       .catch(error => {
         console.error(error);
@@ -273,32 +347,39 @@ function App() {
 
   }
 
-  function cancelEditRow(){
+  /**
+   * Turns off the Edit form and enables the add item form
+   */
+  function cancelEditRow() {
     setEditForm(false)
     setInventoryForm(true)
   }
 
-  function editRowForm(row){
+  /**
+   * Sets row state as the inventory object and enables the edit form
+   * 
+   * @param {*} row inventory object
+   */
+  function editRowForm(row) {
     setInventoryForm(false)
     setEditForm(true)
     setRow(row);
-
     //const form = document.getElementById('edit-row-form');
     //const formData = new FormData(form);
-
-
-    
   }
 
-  function putRow(){
+  /**
+   * Updates a given row with data taken from the edit form
+   * 
+   */
+  function putRow() {
     //console.log(rowData)
     const form = document.getElementById('edit-row-form');
 
-    if (form.elements['edit-size'].value == '0'){
+    if (form.elements['edit-size'].value == '0') {
       alert('Size cannot be 0')
       return;
     }
-
 
     let sumOfSizes = 0;
     let warehouseCapacity = inventory[0].warehouse.maxium_capacity;
@@ -312,7 +393,7 @@ function App() {
     if (sumOfSizes > warehouseCapacity) {
       alert(`Inventory size (${sumOfSizes}) exceeds warehouse capacity (${warehouseCapacity})!`);
       return;
-    } 
+    }
 
 
     let quantity = form.elements['edit-quantity'].value.trim();
@@ -320,16 +401,16 @@ function App() {
 
     let value = form.elements['edit-value'].value.trim();
     value = value ? Number(value) : rowData.value;
-  
+
     let size = form.elements['edit-size'].value.trim();
     size = size ? Number(size) : rowData.size;
-  
+
     let itemName = form.elements['edit-item_name'].value.trim();
     itemName = itemName ? itemName : rowData.item.name;
-  
+
     let itemDescription = form.elements['edit-item_description'].value.trim();
     itemDescription = itemDescription ? itemDescription : rowData.item.description;
-  
+
     let itemCategory = form.elements['edit-item_category'].value.trim();
     itemCategory = itemCategory ? itemCategory : rowData.item.category;
 
@@ -348,51 +429,51 @@ function App() {
     }
 
     fetch('http://localhost:8080/inventory/' + rowData.warehouse_inventory_id, {
-    method: 'PUT',
-    headers: {
+      method: 'PUT',
+      headers: {
         'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(inventoryData)
+      },
+      body: JSON.stringify(inventoryData)
     })
-    .then(response => {
-    if (response.ok) {
-        return response.json();
-    } else {
-        throw new Error('Something went wrong');
-    }
-    })
-    .then(data => {
-      //console.log(data);
-      fetch('http://localhost:8080/items/' + rowData.item.item_id, {
-        method: 'PUT',
-        headers: {
-        'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(itemData)
-      })
       .then(response => {
         if (response.ok) {
-            return response.json();
+          return response.json();
         } else {
-            throw new Error('Something went wrong');
+          throw new Error('Something went wrong');
         }
+      })
+      .then(data => {
+        //console.log(data);
+        fetch('http://localhost:8080/items/' + rowData.item.item_id, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(itemData)
         })
-        .then(data => {
-          //console.log(data);
-          updateTable(currentWarehouse);
-        })
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
+          .then(response => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error('Something went wrong');
+            }
+          })
+          .then(data => {
+            //console.log(data);
+            updateTable(currentWarehouse);
+          })
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
 
   }
 
-    return (
+  return (
 
-      <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
-        {/*Side Bar HTML */}
-        <Sidebar style={{ height: "100vh" }}>
+    <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
+      {/*Side Bar HTML */}
+      <Sidebar style={{ height: "100vh" }}>
         <Menu>
           <MenuItem
             icon={<MenuOutlinedIcon />}
@@ -408,29 +489,29 @@ function App() {
             //console.log(warehouse)
             return (
               <SubMenu key={warehouse.id} icon={<WarehouseIcon />} label={warehouse.name}>
-              <MenuItem icon={<InventoryIcon />} onClick={() => updateTable(warehouse.warehouse_id)}>View Inventory</MenuItem>
-              <MenuItem icon={<LineWeightIcon />} >Capacity: {warehouse.maxium_capacity}</MenuItem>
-              <SubMenu icon={<EditIcon />} label= "Edit Warehouse">
-              <form id={`edit-warehouse-form-${warehouse.warehouse_id}`} onSubmit={handleSubmit}>
-                  <label>
-                  Name:
-                  <input type="text" name="Name" placeholder={warehouse.name}/>
-                  </label>
-                  <label>
-                  Size:
-                  <input type="number" name="Size" placeholder={warehouse.maxium_capacity}/>
-                  </label>
-                  <button type="Submit" onClick={() => handleWarehouseEdit(warehouse.warehouse_id)} >Submit</button>
+                <MenuItem icon={<InventoryIcon />} onClick={() => updateTable(warehouse.warehouse_id)}>View Inventory</MenuItem>
+                <MenuItem icon={<LineWeightIcon />} >Capacity: {warehouse.maxium_capacity}</MenuItem>
+                <SubMenu icon={<EditIcon />} label="Edit Warehouse">
+                  <form id={`edit-warehouse-form-${warehouse.warehouse_id}`} onSubmit={handleSubmit}>
+                    <label>
+                      Name:
+                      <input type="text" name="Name" placeholder={warehouse.name} />
+                    </label>
+                    <label>
+                      Size:
+                      <input type="number" name="Size" placeholder={warehouse.maxium_capacity} />
+                    </label>
+                    <button type="Submit" onClick={() => handleWarehouseEdit(warehouse.warehouse_id)} >Submit</button>
                   </form>
-              </SubMenu>
-              <MenuItem icon={<DeleteOutlineIcon />} onClick={() => warehouseDelete(warehouse.warehouse_id)}>Delete Warehouse</MenuItem>
+                </SubMenu>
+                <MenuItem icon={<DeleteOutlineIcon />} onClick={() => warehouseDelete(warehouse.warehouse_id)}>Delete Warehouse</MenuItem>
               </SubMenu>
             )
           })}
 
           <div>
-            <Button style={{ color: 'black', position: 'absolute', bottom: 15, left: 0, width: '100%'}} variant="text" onClick={addWarehouse}> Add </Button>
-            </div>
+            <Button style={{ color: 'black', position: 'absolute', bottom: 15, left: 0, width: '100%' }} variant="text" onClick={addWarehouse}> Add </Button>
+          </div>
         </Menu>
 
 
@@ -443,101 +524,96 @@ function App() {
         </h1>
 
         <table>
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={column.key}>{column.header}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {inventory.map((row) => (
-          <tr key={row.warehouse_inventory_id}>
-            <td>{row.warehouse_inventory_id}</td>
-            <td>{row.quantity}</td>
-            <td>{row.value}</td>
-            <td>{row.size}</td>
-            <td>{row.item.name}</td>
-            <td>{row.item.description}</td>
-            <td>{row.item.category}</td>
-            <td> <EditIcon onClick={() => editRowForm(row)}/><DeleteOutlineIcon onClick={() => removeInventory(row.warehouse_inventory_id, row.item.item_id)} /> </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  {inventoryForm &&
-  <>
-  <h2 style={{ marginLeft: "5rem" }}>Add Items</h2>
-  <form id="add-inventory-form" onSubmit={handleSubmit}>
-  <label>
-    Quantity:
-    <input type="number" name="quantity" required/>
-  </label>
-  <label>
-    Value:
-    <input type="number" name="value" required/>
-  </label>
-  <label>
-    Size:
-    <input type="number" name="size" required/>
-  </label>
-  <label>
-    Item Name:
-    <input type="text" name="item_name" required/>
-  </label>
-  <label>
-    Item Description:
-    <input type="text" name="item_description"/>
-  </label>
-  <label>
-    Item Category:
-    <input type="text" name="item_category" required/>
-  </label>
-  <button type="Submit" onClick={() => addItem()} >Submit</button>
-  </form> 
-  </>}
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th key={column.key}>{column.header}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {inventory.map((row) => (
+              <tr key={row.warehouse_inventory_id}>
+                <td>{row.warehouse_inventory_id}</td>
+                <td>{row.quantity}</td>
+                <td>{row.value}</td>
+                <td>{row.size}</td>
+                <td>{row.item.name}</td>
+                <td>{row.item.description}</td>
+                <td>{row.item.category}</td>
+                <td> <EditIcon onClick={() => editRowForm(row)} /><DeleteOutlineIcon onClick={() => removeInventory(row.warehouse_inventory_id, row.item.item_id)} /> </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {inventoryForm &&
+          <>
+            <h2 style={{ marginLeft: "5rem" }}>Add Items</h2>
+            <form id="add-inventory-form" onSubmit={handleSubmit}>
+              <label>
+                Quantity:
+                <input type="number" name="quantity" required />
+              </label>
+              <label>
+                Value:
+                <input type="number" name="value" required />
+              </label>
+              <label>
+                Size:
+                <input type="number" name="size" required />
+              </label>
+              <label>
+                Item Name:
+                <input type="text" name="item_name" required />
+              </label>
+              <label>
+                Item Description:
+                <input type="text" name="item_description" />
+              </label>
+              <label>
+                Item Category:
+                <input type="text" name="item_category" required />
+              </label>
+              <button type="Submit" onClick={() => addItem()} >Submit</button>
+            </form>
+          </>}
 
-  {editForm &&
-  <>
-  <h2 style={{ marginLeft: "5rem" }}>Edit Items</h2>
-  <form id="edit-row-form" onSubmit={handleSubmit}>
-  <label>
-    Quantity:
-    <input type="number" name="edit-quantity" placeholder={rowData.quantity}/>
-  </label>
-  <label>
-    Value:
-    <input type="number" name="edit-value" placeholder={rowData.value}/>
-  </label>
-  <label>
-    Size:
-    <input type="number" name="edit-size" placeholder={rowData.size}/>
-  </label>
-  <label>
-    Item Name:
-    <input type="text" name="edit-item_name" placeholder={rowData.item.name}/>
-  </label>
-  <label>
-    Item Description:
-    <input type="text" name="edit-item_description"placeholder={rowData.item.description}/>
-  </label>
-  <label>
-    Item Category:
-    <input type="text" name="edit-item_category" placeholder={rowData.item.category}/>
-  </label>
-  <button type="Submit" onClick={() => putRow()} >Edit</button>
-  <button type="Submit" style={{ backgroundColor: 'red', color: 'white' }} onClick={() => cancelEditRow() }>Cancel Edit Mode</button>
-  </form> 
-  
-  </>}
+        {editForm &&
+          <>
+            <h2 style={{ marginLeft: "5rem" }}>Edit Items</h2>
+            <form id="edit-row-form" onSubmit={handleSubmit}>
+              <label>
+                Quantity:
+                <input type="number" name="edit-quantity" placeholder={rowData.quantity} />
+              </label>
+              <label>
+                Value:
+                <input type="number" name="edit-value" placeholder={rowData.value} />
+              </label>
+              <label>
+                Size:
+                <input type="number" name="edit-size" placeholder={rowData.size} />
+              </label>
+              <label>
+                Item Name:
+                <input type="text" name="edit-item_name" placeholder={rowData.item.name} />
+              </label>
+              <label>
+                Item Description:
+                <input type="text" name="edit-item_description" placeholder={rowData.item.description} />
+              </label>
+              <label>
+                Item Category:
+                <input type="text" name="edit-item_category" placeholder={rowData.item.category} />
+              </label>
+              <button type="Submit" onClick={() => putRow()} >Edit</button>
+              <button type="Submit" style={{ backgroundColor: 'red', color: 'white' }} onClick={() => cancelEditRow()}>Cancel Edit Mode</button>
+            </form>
 
-
-
+          </>}
       </main>
-      </div>
+    </div>
+  );
+}
 
-      
-    );
-  }
-  
-  export default App;
+export default App;

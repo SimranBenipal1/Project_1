@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.skillstorm.demo.models.warehouse;
 
+/**
+ * The Interface warehouseRepository.
+ */
 @Repository
 public interface warehouseRepository extends JpaRepository<warehouse, Long>{
 

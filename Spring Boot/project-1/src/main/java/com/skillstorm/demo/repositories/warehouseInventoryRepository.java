@@ -7,6 +7,9 @@ import com.skillstorm.demo.models.warehouse_inventory;
 
 
 
+/**
+ * The Interface warehouseInventoryRepository.
+ */
 @Repository
 public interface warehouseInventoryRepository extends JpaRepository<warehouse_inventory, Long>{
 
