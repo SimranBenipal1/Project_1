@@ -5,7 +5,6 @@ import WarehouseIcon from '@mui/icons-material/Warehouse';
 import Button from '@mui/material/Button';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import { useTheme } from '@mui/material/styles';
 import * as React from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import "./App.css";
@@ -15,9 +14,9 @@ import "./App.css";
 function App() {
   const { collapseSidebar } = useProSidebar();
   const [warehouses, setWarehouses] = useState([]);
-  const [open, setOpen] = React.useState(false);
-  const theme = useTheme();
   const [inventory, setInventory] = useState([]);
+  const [inventoryForm, setInventoryForm] = useState(false);
+  const [currentWarehouse, setCurrentWarehouse] = useState(0);
 
   //Get Warehouse Names
   useEffect(() => {
@@ -26,13 +25,6 @@ function App() {
       .then(data => setWarehouses(data))
       .catch(err => console.error(err))
   }, []);
-
-  // useEffect(() => {
-  //   fetch('http://localhost:8080/inventory')
-  //     .then(res => res.json())
-  //     .then(data => setInventory(data))
-  //     .catch(err => console.error(err))
-  // }, []);
 
   //Delete warehouse by ID and remove it from the State
   function warehouseDelete(id) {
@@ -57,12 +49,17 @@ function App() {
     setWarehouses(updatedWarehouses);
   }
 
-  function updateTable(id){
-    fetch('http://localhost:8080/inventory')
-      .then(res => res.json())
-      .then(data => setInventory(data.filter(item => item.warehouse.warehouse_id === id)))
-      .catch(err => console.error(err))
-
+  async function updateTable(id) {
+    try {
+      const res = await fetch('http://localhost:8080/inventory');
+      const data = await res.json();
+      setInventory(data.filter(item => item.warehouse.warehouse_id === id));
+      setCurrentWarehouse(id);
+      console.log(id)
+      handleInventoryForm();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   //Names for the columns in the table
@@ -76,6 +73,77 @@ function App() {
     { header: 'Item Category', key: 'item_category' },
     { header: 'Actions', key: 'actions' }, 
   ];
+
+  function addItem(){
+    //console.log(inventory);
+    const form = document.getElementById('add-inventory-form');
+
+    console.log(form)
+    const itemData = {
+      name: form.item_name.value,
+      description: form.item_description.value,
+      category: form.item_category.value
+    }
+
+    fetch('http://localhost:8080/items', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(itemData)
+    })
+
+    let matchingItem;
+
+    fetch('http://localhost:8080/items')
+    .then(response => response.json())
+    .then(items => {
+      // Find the item with matching criteria
+      matchingItem = items.find(item => item.name === form.item_name.value && item.description === form.item_description.value && item.category === form.item_category.value);
+      //console.log(matchingItem); 
+      const inventoryData = {
+        quantity: form.quantity.value,
+        value: form.value.value,
+        size: form.size.value,
+        item: matchingItem,
+        warehouse: inventory[0].warehouse
+      };
+      addInventory(inventoryData);
+    })
+    .catch(error => console.error(error));
+
+
+  }
+
+  function addInventory(inventoryData){
+    //console.log(matchingItem)
+    //console.log(inventoryData)
+
+    fetch('http://localhost:8080/inventory', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(inventoryData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      updateTable(currentWarehouse);
+    })
+    .catch(error => console.error(error));
+
+
+      //console.log(currentWarehouse);
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+  };
+
+  const handleInventoryForm = () => {
+    setInventoryForm(true);
+  };
 
     return (
 
@@ -104,12 +172,11 @@ function App() {
             )
           })}
 
-
-        </Menu>
             <div>
             <Button style={{ color: 'black', position: 'absolute', bottom: 15, left: 0, width: '100%'}} variant="text" > Add </Button>
-
             </div>
+        </Menu>
+
 
       </Sidebar>
 
@@ -142,6 +209,54 @@ function App() {
         ))}
       </tbody>
     </table>
+  {inventoryForm &&
+  <>
+  <h2 style={{ marginLeft: "5rem" }}>Add Items</h2>
+  <form id="add-inventory-form" onSubmit={handleSubmit}>
+  <label>
+    Quantity:
+    <input type="number" name="quantity" />
+  </label>
+  <label>
+    Value:
+    <input type="number" name="value" />
+  </label>
+  <label>
+    Size:
+    <input type="number" name="size" />
+  </label>
+  <label>
+    Item ID:
+    <input type="number" name="item_id" />
+  </label>
+  <label>
+    Item Name:
+    <input type="text" name="item_name" />
+  </label>
+  <label>
+    Item Description:
+    <input type="text" name="item_description"/>
+  </label>
+  <label>
+    Item Category:
+    <input type="text" name="item_category" />
+  </label>
+  <label>
+    Warehouse ID:
+    <input type="number" name="warehouse_id" />
+  </label>
+  <label>
+    Warehouse Name:
+    <input type="text" name="warehouse_name" />
+  </label>
+  <label>
+    Warehouse Max Capacity:
+    <input type="number" name="warehouse_max_capacity" />
+  </label>
+  <button type="Submit" onClick={() => addItem()} >Submit</button>
+  </form> 
+  </>}
+
 
 
       </main>
