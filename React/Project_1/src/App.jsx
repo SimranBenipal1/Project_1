@@ -106,6 +106,26 @@ function App() {
     //console.log(inventory);
     const form = document.getElementById('add-inventory-form');
 
+    //console.log(inventory);
+
+    if (form.item_name.value == '' || form.item_category.value == '' || form.quantity.value == '' || form.size.value == '' || form.value.value == ''){
+      return;
+    }
+
+    let sumOfSizes = 0;
+    let warehouseCapacity = inventory[0].warehouse.maxium_capacity;
+
+    for (let i = 0; i < inventory.length; i++) {
+      sumOfSizes += inventory[i].size;
+      //console.log(sumOfSizes);
+    }
+    sumOfSizes += parseInt(form.size.value);
+    //console.log(sumOfSizes);
+    if (sumOfSizes > warehouseCapacity) {
+      alert(`Inventory size (${sumOfSizes}) exceeds warehouse capacity (${warehouseCapacity})!`);
+      return;
+    } 
+
     //console.log(form)
     const itemData = {
       name: form.item_name.value,
@@ -273,6 +293,26 @@ function App() {
     //console.log(rowData)
     const form = document.getElementById('edit-row-form');
 
+    if (form.elements['edit-size'].value == '0'){
+      alert('Size cannot be 0')
+      return;
+    }
+
+
+    let sumOfSizes = 0;
+    let warehouseCapacity = inventory[0].warehouse.maxium_capacity;
+
+    for (let i = 0; i < inventory.length; i++) {
+      sumOfSizes += inventory[i].size;
+      //console.log(sumOfSizes);
+    }
+    sumOfSizes += parseInt(form.elements['edit-size'].value);
+    //console.log(sumOfSizes);
+    if (sumOfSizes > warehouseCapacity) {
+      alert(`Inventory size (${sumOfSizes}) exceeds warehouse capacity (${warehouseCapacity})!`);
+      return;
+    } 
+
 
     let quantity = form.elements['edit-quantity'].value.trim();
     quantity = quantity ? Number(quantity) : rowData.quantity;
@@ -429,19 +469,19 @@ function App() {
   <form id="add-inventory-form" onSubmit={handleSubmit}>
   <label>
     Quantity:
-    <input type="number" name="quantity"/>
+    <input type="number" name="quantity" required/>
   </label>
   <label>
     Value:
-    <input type="number" name="value" />
+    <input type="number" name="value" required/>
   </label>
   <label>
     Size:
-    <input type="number" name="size" />
+    <input type="number" name="size" required/>
   </label>
   <label>
     Item Name:
-    <input type="text" name="item_name" />
+    <input type="text" name="item_name" required/>
   </label>
   <label>
     Item Description:
@@ -449,7 +489,7 @@ function App() {
   </label>
   <label>
     Item Category:
-    <input type="text" name="item_category" />
+    <input type="text" name="item_category" required/>
   </label>
   <button type="Submit" onClick={() => addItem()} >Submit</button>
   </form> 
