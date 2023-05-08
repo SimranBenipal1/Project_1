@@ -17,7 +17,8 @@ function App() {
   const [inventory, setInventory] = useState([]);
   const [inventoryForm, setInventoryForm] = useState(false);
   const [currentWarehouse, setCurrentWarehouse] = useState(0);
-
+  const [editForm, setEditForm] = useState(false);
+  const [rowData, setRow] = useState([]);
   //Get Warehouse Names
   useEffect(() => {
     fetch('http://localhost:8080/warehouse')
@@ -57,6 +58,7 @@ function App() {
       setCurrentWarehouse(id);
       //console.log(id)
       handleInventoryForm();
+      setEditForm(false);
     } catch (err) {
       console.error(err);
     }
@@ -250,6 +252,101 @@ function App() {
 
   }
 
+  function cancelEditRow(){
+    setEditForm(false)
+    setInventoryForm(true)
+  }
+
+  function editRowForm(row){
+    setInventoryForm(false)
+    setEditForm(true)
+    setRow(row);
+
+    //const form = document.getElementById('edit-row-form');
+    //const formData = new FormData(form);
+
+
+    
+  }
+
+  function putRow(){
+    //console.log(rowData)
+    const form = document.getElementById('edit-row-form');
+
+
+    let quantity = form.elements['edit-quantity'].value.trim();
+    quantity = quantity ? Number(quantity) : rowData.quantity;
+
+    let value = form.elements['edit-value'].value.trim();
+    value = value ? Number(value) : rowData.value;
+  
+    let size = form.elements['edit-size'].value.trim();
+    size = size ? Number(size) : rowData.size;
+  
+    let itemName = form.elements['edit-item_name'].value.trim();
+    itemName = itemName ? itemName : rowData.item.name;
+  
+    let itemDescription = form.elements['edit-item_description'].value.trim();
+    itemDescription = itemDescription ? itemDescription : rowData.item.description;
+  
+    let itemCategory = form.elements['edit-item_category'].value.trim();
+    itemCategory = itemCategory ? itemCategory : rowData.item.category;
+
+    const inventoryData = {
+      "quantity": quantity,
+      "value": value,
+      "size": size,
+      "item": rowData.item,
+      "warehouse": rowData.warehouse
+    };
+
+    const itemData = {
+      "name": itemName,
+      "description": itemDescription,
+      "category": itemCategory
+    }
+
+    fetch('http://localhost:8080/inventory/' + rowData.warehouse_inventory_id, {
+    method: 'PUT',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(inventoryData)
+    })
+    .then(response => {
+    if (response.ok) {
+        return response.json();
+    } else {
+        throw new Error('Something went wrong');
+    }
+    })
+    .then(data => {
+      //console.log(data);
+      fetch('http://localhost:8080/items/' + rowData.item.item_id, {
+        method: 'PUT',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(itemData)
+      })
+      .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Something went wrong');
+        }
+        })
+        .then(data => {
+          //console.log(data);
+          updateTable(currentWarehouse);
+        })
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+  }
+
     return (
 
       <div id="app" style={({ height: "100vh" }, { display: "flex" })}>
@@ -321,7 +418,7 @@ function App() {
             <td>{row.item.name}</td>
             <td>{row.item.description}</td>
             <td>{row.item.category}</td>
-            <td> <EditIcon onClick={() => console.log("Hello World")}/><DeleteOutlineIcon onClick={() => removeInventory(row.warehouse_inventory_id, row.item.item_id)} /> </td>
+            <td> <EditIcon onClick={() => editRowForm(row)}/><DeleteOutlineIcon onClick={() => removeInventory(row.warehouse_inventory_id, row.item.item_id)} /> </td>
           </tr>
         ))}
       </tbody>
@@ -332,7 +429,7 @@ function App() {
   <form id="add-inventory-form" onSubmit={handleSubmit}>
   <label>
     Quantity:
-    <input type="number" name="quantity" />
+    <input type="number" name="quantity"/>
   </label>
   <label>
     Value:
@@ -341,10 +438,6 @@ function App() {
   <label>
     Size:
     <input type="number" name="size" />
-  </label>
-  <label>
-    Item ID:
-    <input type="number" name="item_id" />
   </label>
   <label>
     Item Name:
@@ -358,20 +451,42 @@ function App() {
     Item Category:
     <input type="text" name="item_category" />
   </label>
-  <label>
-    Warehouse ID:
-    <input type="number" name="warehouse_id" />
-  </label>
-  <label>
-    Warehouse Name:
-    <input type="text" name="warehouse_name" />
-  </label>
-  <label>
-    Warehouse Max Capacity:
-    <input type="number" name="warehouse_max_capacity" />
-  </label>
   <button type="Submit" onClick={() => addItem()} >Submit</button>
   </form> 
+  </>}
+
+  {editForm &&
+  <>
+  <h2 style={{ marginLeft: "5rem" }}>Edit Items</h2>
+  <form id="edit-row-form" onSubmit={handleSubmit}>
+  <label>
+    Quantity:
+    <input type="number" name="edit-quantity" placeholder={rowData.quantity}/>
+  </label>
+  <label>
+    Value:
+    <input type="number" name="edit-value" placeholder={rowData.value}/>
+  </label>
+  <label>
+    Size:
+    <input type="number" name="edit-size" placeholder={rowData.size}/>
+  </label>
+  <label>
+    Item Name:
+    <input type="text" name="edit-item_name" placeholder={rowData.item.name}/>
+  </label>
+  <label>
+    Item Description:
+    <input type="text" name="edit-item_description"placeholder={rowData.item.description}/>
+  </label>
+  <label>
+    Item Category:
+    <input type="text" name="edit-item_category" placeholder={rowData.item.category}/>
+  </label>
+  <button type="Submit" onClick={() => putRow()} >Edit</button>
+  <button type="Submit" style={{ backgroundColor: 'red', color: 'white' }} onClick={() => cancelEditRow() }>Cancel Edit Mode</button>
+  </form> 
+  
   </>}
 
 
