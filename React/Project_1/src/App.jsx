@@ -42,7 +42,7 @@ function App() {
       console.log(data);
     })
     .catch(error => {
-      console.error('Error:', error);
+      //console.error('Error:', error);
     });
 
     const updatedWarehouses = warehouses.filter(warehouse => warehouse.warehouse_id !== id);
@@ -63,9 +63,32 @@ function App() {
   }
 
   function addWarehouse(){
-
+    fetch('http://localhost:8080/warehouse', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Default Warehouse',
+        maxium_capacity: 10000
+      })
+    })
+      .then(response => response.json())
+      .then(
+        fetch('http://localhost:8080/warehouse')
+        .then(res => res.json())
+        .then(data => {
+          //console.log(data);
+          fetch('http://localhost:8080/warehouse')
+          .then(res => res.json())
+          .then(data => setWarehouses(data))
+          .catch(err => console.error(err))
+        })
+        .catch(err => console.error(err))
+      )
+      .catch(error => console.error(error));
   }
-  //Names for the columns in the table
+
   const columns = [
     { header: 'Warehouse Inventory ID', key: 'warehouse_inventory_id' },
     { header: 'Quantity', key: 'quantity' },
@@ -155,6 +178,14 @@ function App() {
     //console.log(itemID);
     fetch('http://localhost:8080/inventory/' + inventoryID, {
       method: 'delete'
+    })
+    .then(data => {
+      fetch('http://localhost:8080/items/' + itemID, {
+        method: 'delete'
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     })
     .catch(error => {
       console.error('Error:', error);
